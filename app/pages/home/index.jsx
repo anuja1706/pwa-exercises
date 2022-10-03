@@ -8,6 +8,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import {useIntl, FormattedMessage} from 'react-intl'
+import {Alert, AlertIcon} from '@chakra-ui/react'
 
 // Components
 import {
@@ -48,7 +49,15 @@ import {
  */
 
 const MyHeader = ({name}) => {
-    return<h1>Hello, {name}!</h1>
+    return (
+        <Box>
+            <h1>Hello, {name}!</h1>
+            <Alert padding="10" status="success">
+                <AlertIcon/>
+                Chakra UI components unlocked!
+            </Alert>
+        </Box>
+    )
 }
 
 const Home = ({productSearchResult, isLoading}) => {
