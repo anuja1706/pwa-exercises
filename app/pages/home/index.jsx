@@ -47,8 +47,8 @@ import {
  * categories and products, data is from local file.
  */
 
- const MyHeader = () => {
-    return <h1>Hello from custom component</h1>
+const MyHeader = ({name}) => {
+    return<h1>Hello, {name}!</h1>
 }
 
 const Home = ({productSearchResult, isLoading}) => {
@@ -62,8 +62,7 @@ const Home = ({productSearchResult, isLoading}) => {
                 keywords="Commerce Cloud, Retail React App, React Storefront"
             />
 
-            <h1>Hello there PWA developer!</h1>
-            <MyHeader/>
+            <MyHeader name = "Anuja"/>
             <Hero
                 title={intl.formatMessage({
                     defaultMessage: 'The React PWA Starter Store for Retail',
