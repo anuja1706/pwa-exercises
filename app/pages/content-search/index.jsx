@@ -30,7 +30,7 @@ const ContentSearch = ({ contentResult }) => {
 ContentSearch.getProps = async () => {
     let contentResult
     const res = await fetch(
-        `http://localhost:3000/mobify/proxy/ocapi/s/RefArch/dw/shop/v20_2/content_search?q=about&client_id=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa`
+        `http://localhost:3000/mobify/proxy/ocapi/s/RefArch/dw/shop/v20_2/content_search?q=about&client_id=ce75fb42-f2c8-4b49-8cf4-438c414ebee6`
     )
     if (res.ok) {
         contentResult = await res.json()
