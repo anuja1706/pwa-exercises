@@ -1,11 +1,26 @@
-import React from 'react'
+import React, {useState} from 'react'
 import PropTypes from 'prop-types'
 import Helmet from 'react-helmet'
-import {Text} from '@chakra-ui/react'
-import {pluckIds} from '../../utils/utils'
-import {Tooltip} from '@chakra-ui/react'
+import {Tooltip, Spinner, Text} from '@chakra-ui/react'
+import { useCommerceAPI } from '../../commerce-api/contexts'
 
-const ProductDetails = ({product, promotions}) => {
+const ProductDetails = ({product}) => {
+    const api = useCommerceAPI()
+    const [promotionMap, setPromotionMap] = useState({})
+    const {productPromotions} = product
+    const handleHover = (id) => {
+        // Don't make a network request if you already loaded this data.
+        if(promotionMap[id]) {
+            return
+        }
+        const getPromotion =async(id) => {
+            const promotions =await api.shopperPromotions.getPromotions({
+                parameters: {ids: id}
+            })
+            setPromotionMap({...promotionMap,[id]: promotions.data[0]})
+        }
+        getPromotion(id)
+    }
     return (
         <div className = "t-product-details" itemScope itemType="http://schema.org/Product">
             <Text>This is the product: {product.name}</Text>
@@ -15,11 +30,21 @@ const ProductDetails = ({product, promotions}) => {
                     <meta name="description" content={product.name} />
                 </Helmet>
             )}
-
+            
             <Text>These are the promotions (if any):</Text>
-            {promotions &&
-                promotions.map(({id, calloutMsg, details}) => (
-                    <Tooltip key={id} label={details} aria-label="Promotion details">
+            {productPromotions &&
+                productPromotions.map(({promotionId, calloutMsg}) => (
+                    <Tooltip 
+                        onOpen={() => {
+                            handleHover(promotionId)
+                        }}
+                        key={promotionId}
+                        label={
+                            (promotionMap[promotionId] && promotionMap[promotionId].details) || (
+                                <Spinner />
+                            )
+                        }
+                        aria-label="Promotion details">
                         <Text>{calloutMsg}</Text>
                     </Tooltip>
                 )
@@ -38,21 +63,12 @@ ProductDetails.getProps = async ({params, api}) => {
         parameters: {id:params.productId, allImages:true}
     })
 
-    const promotionIds = pluckIds(product.productPromotions,'promotionId')
-
-    // Get the promotions for the product
-    const promotions = await api.shopperPromotions.getPromotions({
-        parameters:{ids: promotionIds}
-    })
-
     return {
-        product: product,
-        promotions: promotions.data
+        product: product
     }
 }
 ProductDetails.propTypes = {
     product: PropTypes.object,
-    promotions: PropTypes.array,
     errorMessage: PropTypes.string,
     params: PropTypes.object,
     trackPageLoad: PropTypes.func
