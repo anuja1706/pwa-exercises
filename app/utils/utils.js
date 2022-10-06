@@ -1,3 +1,13 @@
+/**
+ * Returns a comma-separated list of ids from an array of objects
+ * @function pluckIds
+ * @returns {string}
+ */
+export const pluckIds = (arrayIn, idProperty) => {
+    // Yep, inspired by https://underscorejs.org/#pluck
+    return arrayIn.map(iterator => iterator[idProperty]).toString()
+}
+
 /*
  * Copyright (c) 2021, salesforce.com, inc.
  * All rights reserved.
