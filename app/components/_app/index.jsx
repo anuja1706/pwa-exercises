@@ -6,15 +6,16 @@
  */
 
 import fetch from 'cross-fetch'
-import React, {useState, useEffect} from 'react'
+import React, { useState, useEffect, Fragment} from 'react'
 import PropTypes from 'prop-types'
-import {useHistory, useLocation} from 'react-router-dom'
-import {getAssetUrl} from 'pwa-kit-react-sdk/ssr/universal/utils'
-import {getAppOrigin} from 'pwa-kit-react-sdk/utils/url'
+import { useHistory, useLocation} from 'react-router-dom'
+import { getAssetUrl} from 'pwa-kit-react-sdk/ssr/universal/utils'
+import { getAppOrigin} from 'pwa-kit-react-sdk/utils/url'
 
 // Chakra
-import {Box, useDisclosure, useStyleConfig} from '@chakra-ui/react'
-import {SkipNavLink, SkipNavContent} from '@chakra-ui/skip-nav'
+import { Box, Text, useDisclosure, useStyleConfig } from '@chakra-ui/react'
+import { SkipNavLink, SkipNavContent } from '@chakra-ui/skip-nav'
+import { InfoOutlineIcon } from '@chakra-ui/icons'
 
 // Contexts
 import {CategoriesProvider, CurrencyProvider} from '../../contexts'
@@ -50,6 +51,11 @@ import Seo from '../seo'
 import {resolveSiteFromUrl} from '../../utils/site-utils'
 import useMultiSite from '../../hooks/use-multi-site'
 
+const GEO_LOCATION = {
+    lat: '34.052235',
+    long: '-118.243683'
+}
+
 const DEFAULT_NAV_DEPTH = 3
 const DEFAULT_ROOT_CATEGORY = 'root'
 
@@ -65,6 +71,7 @@ const App = (props) => {
     const {site, locale, buildUrl} = useMultiSite()
 
     const [isOnline, setIsOnline] = useState(true)
+    const [closestStore, setClosestStore] = useState(undefined)
     const styles = useStyleConfig('App')
 
     const {isOpen, onOpen, onClose} = useDisclosure()
@@ -139,6 +146,22 @@ const App = (props) => {
         const path = buildUrl('/account/wishlist')
         history.push(path)
     }
+
+    useEffect(() => {
+        const fetchStore = async () => {
+            const res = await fetch(
+                `http://localhost:3000/mobify/proxy/ocapi/s/RefArch/dw/shop/v20_2/stores?latitude=${GEO_LOCATION.lat}&longitude=${GEO_LOCATION.long}&client_id=ce75fb42-f2c8-4b49-8cf4-438c414ebee6`
+            )
+            if (res.ok) {
+                const storeResult = await res.json()
+                const firstStore = storeResult.data[0]
+                if (firstStore) {
+                    setClosestStore(firstStore)
+                }
+            }
+        }
+        fetchStore()
+    }, [])
 
     return (
         <Box className="sf-app" {...styles.container}>
@@ -228,6 +251,12 @@ const App = (props) => {
                             </Box>
 
                             {!isOnline && <OfflineBanner />}
+                            {closestStore && (
+                                <Fragment>
+                                    <h1>Closest store: {closestStore.name}</h1>
+                                    <h1>Address: {closestStore.address1}, {closestStore.city}</h1>
+                                </Fragment>
+                            )}
                             <AddToCartModalProvider>
                                 <SkipNavContent
                                     style={{
